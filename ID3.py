@@ -139,11 +139,11 @@ def buildTree(node,attribute_list):
                 best_false_attribute_list=false_attribute_list
                 best_true_attribute_list=true_attribute_list
           
-        print("Best:")
-        print(best_ig)
-        print(best_attribute_index)
-        print(best_count)
-        print("Possible"+str(possible_attributes_index))
+        # print("Best:")
+        # print(best_ig)
+        # print(best_attribute_index)
+        # print(best_count)
+        # print("Possible"+str(possible_attributes_index))
     
         possible_attributes_index.remove(best_attribute_index)    
         node.att_to_split_on_index=best_attribute_index
@@ -246,7 +246,7 @@ def main(args):
     startTree()
     print("Tree:- ")    
     printtree(root,0)
-    print('Post-Pruned Accuracy')
+    print('Pre-Pruned Accuracy')
     print('-------------------------------------')
     print ('Total number of nodes in the tree = %d'%node_num)
     print('Number of leaf nodes in the tree = %d'%leaf_node_num)
