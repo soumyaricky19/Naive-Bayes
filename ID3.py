@@ -7,14 +7,16 @@ from math import log
 attribute_vector_list=[]
 attribute_list=[]
 attribute_num=0
-num_rows=0
+row_num=0
+node_num=0
+leaf_node_num=0
 
 
 def create_training(training):
     file=open(training)
     read=csv.reader(file)
     is_header=True
-    global num_rows
+    global row_num
     global attribute_vector_list
     global attribute_num
     global map
@@ -25,7 +27,7 @@ def create_training(training):
             map=row[0:attribute_num]
             is_header=False
         else:
-            num_rows+=1
+            row_num+=1
             train=(row[0:len(row)-1],row[len(row)-1])
             attribute_vector_list.append(train)
     #attribute_vector_list[row num][column type][column num]
@@ -34,15 +36,15 @@ def create_training(training):
     #print(attribute_num)
     #print(map[5])
     #print('Original List length: '+str(attribute_vector_list[0]))
-    print("Number of examples found: %d" %num_rows)
+    print("Number of examples found: %d" %row_num)
     print('Done feature')
     
 def startTree():
     root=Node()
     p=0
     n=0
-    print("Number %d" %num_rows)
-    for x in range(num_rows):
+    print("Number %d" %row_num)
+    for x in range(row_num):
             cl=attribute_vector_list[x][1][0]
             if cl=='0':
                 p+=1
@@ -61,6 +63,9 @@ def startTree():
 
 def buildTree(node,attribute_list):
     if node.decision==2:
+        global node_num
+        global leaf_node_num
+        node_num+=1
         is_pure=False
         best_ig=0
         possible_attributes_index=[]
@@ -73,6 +78,7 @@ def buildTree(node,attribute_list):
         if (node_entropy == 0 ):
             is_pure=True
         if ((not node.possible_attributes_index) or is_pure ):
+            leaf_node_num+=1
             if (node.n_num >= node.p_num):
                 node.decision=0
             else:
@@ -202,7 +208,10 @@ def main(args):
     
     create_training(training)  
     startTree()
-    
+    print('Number of training instances = %d'%row_num)
+    print('Number of training attributes = %d'%attribute_num)
+    print ('Total number of nodes in the tree = %d'%node_num)
+    print('Number of leaf nodes in the tree = %d'%leaf_node_num)
     #tree=start_tree()
     #print('Number of nodes in tree',number_of_nodes)
     #display_tree(tree,0)
