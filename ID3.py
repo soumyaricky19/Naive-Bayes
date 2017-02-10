@@ -12,8 +12,8 @@ node_num=0
 leaf_node_num=0
 
 
-def create_training(training):
-    file=open(training)
+def read_data(data_file):
+    file=open(data_file)
     read=csv.reader(file)
     is_header=True
     global row_num
@@ -36,10 +36,11 @@ def create_training(training):
     #print(attribute_num)
     #print(map[5])
     #print('Original List length: '+str(attribute_vector_list[0]))
-    print("Number of examples found: %d" %row_num)
-    print('Done feature')
+    #print("Number of examples found: %d" %row_num)
+    #print('Done feature')
     
 def startTree():
+    global root
     root=Node()
     p=0
     n=0
@@ -58,8 +59,7 @@ def startTree():
     root.possible_attributes_index=range(attribute_num)
     #print('Root list length: %d'%len(attribute_vector_list[0][0]))
     root=buildTree(root,attribute_vector_list)     
-    print("Tree:- ")    
-    printtree(root,0)
+    
 
 def buildTree(node,attribute_list):
     if node.decision==2:
@@ -72,7 +72,7 @@ def buildTree(node,attribute_list):
         for x in range(len(node.possible_attributes_index)):
             possible_attributes_index.append(node.possible_attributes_index[x])         
         
-        best_count=0
+        best_count=[[0,0],[0,0]]
         ig=0
         node_entropy=calcEntropy(node.n_num,node.p_num)
         if (node_entropy == 0 ):
@@ -86,6 +86,8 @@ def buildTree(node,attribute_list):
             print('CLASSIFIED as :%d'%node.decision)
             return node
         best_attribute_index=possible_attributes_index[0]
+        best_false_attribute_list=[]
+        best_true_attribute_list=[]
 
         print("Node +: %d"%node.p_num)
         print("Node -: %d"%node.n_num)
@@ -138,10 +140,10 @@ def buildTree(node,attribute_list):
                 best_true_attribute_list=true_attribute_list
           
         print("Best:")
-        #print(best_ig)
+        print(best_ig)
         print(best_attribute_index)
-        #print(best_count)
-        #print("Possible"+str(possible_attributes_index))
+        print(best_count)
+        print("Possible"+str(possible_attributes_index))
     
         possible_attributes_index.remove(best_attribute_index)    
         node.att_to_split_on_index=best_attribute_index
@@ -169,6 +171,33 @@ def calcEntropy(n,p):
 
         e=-pr1*p1-pr2*p2
         return e
+def find_accuracy(attribute_vector_list):
+    global root
+    return find(root,attribute_vector_list)
+
+def find(node,attribute_vector_list):
+    correct=0
+    wrong=0
+    for x in attribute_vector_list:
+        n=node
+        while (n.decision == 2):
+            i=n.att_to_split_on_index
+            if x[0][i] == '0':
+                n=n.false_child
+            if x[0][i] == '1':
+                n=n.true_child
+        if x[1] == str(n.decision):
+            # print("Correct: ",str(x[0])," class:",str(x[1])," Pred: ",str(n.decision))
+            correct+=1
+        else:
+            wrong+=1
+            # print("Wrong: ",str(x[0])," class:",str(x[1])," Pred: ",str(n.decision))
+
+    # print(correct)
+    # print(wrong)
+    return correct/float(correct+wrong)*100
+
+
 
 
 def printtree(node,k):   
@@ -198,20 +227,35 @@ def printtree(node,k):
         
         printtree(node.true_child,k)
 
+def printAccuracy():
+    print('\nNumber of training instances = %d'%row_num)
+    print('Number of training attributes = %d'%attribute_num)
+    print('Accuracy of the model on the training dataset = %f' %find_accuracy(attribute_vector_list))
+
 
 def main(args):
     print("Program executing...")
     #att_info=args[1]
     #training_data=
     training="training_set.csv"
+    validation="validation_set.csv"
+    test="test_set.csv"
     #test=args[3]
     
-    create_training(training)  
+    read_data(training)
     startTree()
-    print('Number of training instances = %d'%row_num)
-    print('Number of training attributes = %d'%attribute_num)
+    print("Tree:- ")    
+    printtree(root,0)
+    print('Post-Pruned Accuracy')
+    print('-------------------------------------')
     print ('Total number of nodes in the tree = %d'%node_num)
     print('Number of leaf nodes in the tree = %d'%leaf_node_num)
+    printAccuracy()
+    read_data(validation)
+    printAccuracy()
+    read_data(test)
+    printAccuracy()
+
     #tree=start_tree()
     #print('Number of nodes in tree',number_of_nodes)
     #display_tree(tree,0)
