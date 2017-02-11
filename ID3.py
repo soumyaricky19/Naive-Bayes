@@ -5,6 +5,7 @@ from Node import Node
 from math import log
 import random
 
+accuracy_improvement_threshold=1
 node_num=0
 leaf_node_num=0
 
@@ -71,10 +72,13 @@ def buildTree(node,attribute_list):
             is_pure=True
         if ((not node.possible_attributes_index) or is_pure ):
             leaf_node_num+=1
-            if (node.n_num >= node.p_num):
+            if (node.n_num > node.p_num):
                 node.decision=0
             else:
-                node.decision=1
+                if(node.n_num < node.p_num):
+                    node.decision=1
+                else:
+                    node.decision=random.randrange(1)    
             # print('CLASSIFIED as :%d'%node.decision)
             return node
         best_attribute_index=possible_attributes_index[0]
@@ -152,7 +156,6 @@ def calcEntropy(n,p):
         e=-pr1*p1-pr2*p2
         return e
 
-
 def findAccuracy(node,attribute_vector_list):
     correct=0
     wrong=0
@@ -185,20 +188,20 @@ def copyTree(node):
 def prune(factor):
     global node_num
     global leaf_node_num
-    n=factor*node_num
     global root
     global best_tree
     global attribute_vector_list
     global count
+    n=int(factor*node_num)
     val_accuracy=findAccuracy(root,attribute_vector_list)
     curr_accuracy=val_accuracy 
-    while curr_accuracy <= val_accuracy:       
+    while curr_accuracy <= val_accuracy+accuracy_improvement_threshold:       
         tree=copyTree(root)  
-        for x in range(int(n)):
+        for x in range(n):
             node_num=0
             leaf_node_num=0
             countTree(tree)
-            k=random.randrange(2,node_num-leaf_node_num)
+            k=random.randrange(node_num-leaf_node_num)
             count=0
             pruneTree(tree,k)           
         curr_accuracy=findAccuracy(tree,attribute_vector_list)
@@ -208,12 +211,15 @@ def pruneTree(node,k):
     global count
     if(node.decision==2):  
         count+=1   
-        if (count==k):
+        if (count==k and node.split_att_value !=2):
             # print(node.att_to_split_on_index)
             if (node.n_num > node.p_num):
                 node.decision=0
             else:
-                node.decision=1
+                if(node.n_num < node.p_num):
+                    node.decision=1
+                else:
+                    node.decision=random.randrange(1)
         pruneTree(node.false_child,k)
         pruneTree(node.true_child,k)
     
@@ -263,11 +269,10 @@ def main(args):
     global node_num
     global leaf_node_num
     print("Program executing...")
-    
-    training="training_set.csv"
+    training=args[1]
     validation="validation_set.csv"
-    test="test_set.csv"
-    #test=args[3]
+    test=args[2]
+    factor=float(args[3])
     
     read_data(training)
     startTree()
@@ -287,9 +292,8 @@ def main(args):
     printAccuracy(root,"testing")
     
     read_data(validation)
-    prune(0.01)
-    
-    
+    prune(factor)
+       
     node_num=0
     leaf_node_num=0
     # printTree(best_tree,0)
