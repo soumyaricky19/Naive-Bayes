@@ -5,7 +5,7 @@ from Node import Node
 from math import log
 import random
 
-accuracy_improvement_threshold=1
+accuracy_improvement_threshold=0
 node_num=0
 leaf_node_num=0
 
@@ -270,9 +270,9 @@ def main(args):
     global leaf_node_num
     print("Program executing...")
     training=args[1]
-    validation="validation_set.csv"
-    test=args[2]
-    factor=float(args[3])
+    validation=args[2]
+    test=args[3]
+    factor=float(args[4])
     
     read_data(training)
     startTree()
