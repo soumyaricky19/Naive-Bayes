@@ -8,6 +8,7 @@ import random
 accuracy_improvement_threshold=0
 node_num=0
 leaf_node_num=0
+depth=0
 
 def read_data(data_file):
     file=open(data_file)
@@ -144,6 +145,82 @@ def buildTree(node,attribute_list):
     return node
 
 
+
+def startRandomTree():
+    global random_root
+    random_root=Node()
+    p=0
+    n=0
+    # print("Number %d" %row_num)
+    for x in range(row_num):
+            cl=attribute_vector_list[x][1][0]
+            if cl=='0':
+                p+=1
+            else:
+                n+=1
+    # print("root +: %d"%p)
+    # print("root -: %d"%n)
+    random_root.p_num=p
+    random_root.n_num=n
+    random_root.possible_attributes_index=range(attribute_num)
+    random_root=buildRandomTree(random_root,attribute_vector_list)     
+    
+
+def buildRandomTree(node,attribute_list):
+    if node.decision==2:
+        global node_num
+        global leaf_node_num
+        node_num+=1
+        is_pure=False
+        possible_attributes_index=[]
+        for x in range(len(node.possible_attributes_index)):
+            possible_attributes_index.append(node.possible_attributes_index[x])         
+        
+        node_entropy=calcEntropy(node.n_num,node.p_num)
+        if (node_entropy == 0 ):
+            is_pure=True
+        if ((not node.possible_attributes_index) or is_pure ):
+            leaf_node_num+=1
+            if (node.n_num > node.p_num):
+                node.decision=0
+            else:
+                if(node.n_num < node.p_num):
+                    node.decision=1
+                else:
+                    node.decision=random.randrange(1)    
+            # print('CLASSIFIED as :%d'%node.decision)
+            return node
+        attribute_index=random.randrange(len(possible_attributes_index))
+
+        false_attribute_list=[]
+        true_attribute_list=[]
+        count=[[0,0],[0,0]]
+        for x in range(len(attribute_list)):
+            at=attribute_list[x][0][attribute_index]
+            cl=attribute_list[x][1][0]
+            if at=='0':
+                false_attribute_list.append(attribute_list[x])
+                if cl=='0':
+                    count[0][0]+=1     
+                else:
+                    count[0][1]+=1    
+            else:
+                true_attribute_list.append(attribute_list[x])
+                if cl=='0':
+                    count[1][0]+=1     
+                else:
+                    count[1][1]+=1
+    
+        possible_attributes_index.remove(attribute_index)    
+        node.att_to_split_on_index=attribute_index
+        node.false_child=buildTree(Node(attribute_index,0,possible_attributes_index,count[0][0],count[0][1]),false_attribute_list)
+        node.true_child=buildTree(Node(attribute_index,1,possible_attributes_index,count[1][0],count[1][1]),true_attribute_list)
+        node.n_num=count[0][0]+count[0][1]
+        node.p_num=count[1][0]+count[1][1]
+
+    return node    
+
+
 def calcEntropy(n,p):
     if (n==0 or p==0):
         return 0
@@ -200,7 +277,7 @@ def prune(factor):
         for x in range(n):
             node_num=0
             leaf_node_num=0
-            countTree(tree)
+            countTree(tree,0)
             k=random.randrange(node_num-leaf_node_num)
             count=0
             pruneTree(tree,k)           
@@ -223,15 +300,18 @@ def pruneTree(node,k):
         pruneTree(node.false_child,k)
         pruneTree(node.true_child,k)
     
-def countTree(node):
+def countTree(node,count):
     global node_num
     global leaf_node_num
+    global depth
     node_num+=1
+    count+=1
     if(node.decision!=2):
-        leaf_node_num+=1
+        leaf_node_num+=1       
+        depth+=count
     else:
-      countTree(node.false_child)  
-      countTree(node.true_child)
+        countTree(node.false_child,count)  
+        countTree(node.true_child,count)
 
 
 def printTree(node,k):   
@@ -266,8 +346,10 @@ def printAccuracy(node,str):
 def main(args):
     global root
     global best_tree
+    global random_root
     global node_num
     global leaf_node_num
+    global depth
     print("Program executing...")
     training=args[1]
     validation=args[2]
@@ -280,11 +362,12 @@ def main(args):
 
     node_num=0
     leaf_node_num=0
-    countTree(root)
+    countTree(root,0)
     print('\nPre-Pruned Accuracy')
     print('-------------------------------------')
     print ('Total number of nodes in the tree = %d'%node_num)
     print('Number of leaf nodes in the tree = %d'%leaf_node_num)
+    print('Depth of the original tree = ',str(depth/float(leaf_node_num)))
     printAccuracy(root,"training")
     read_data(validation)
     printAccuracy(root,"validation")
@@ -297,7 +380,7 @@ def main(args):
     node_num=0
     leaf_node_num=0
     # printTree(best_tree,0)
-    countTree(best_tree)
+    countTree(best_tree,0)
     print('\nPost-Pruned Accuracy')
     print('-------------------------------------')
     print ('Total number of nodes in the tree = %d'%node_num)
@@ -308,6 +391,23 @@ def main(args):
     printAccuracy(best_tree,"validation")
     read_data(test)
     printAccuracy(best_tree,"testing")
+
+    read_data(training)
+    startRandomTree()
+    # printTree(random_root,0)
+    node_num=0
+    leaf_node_num=0
+    depth=0
+    countTree(random_root,0)
+    print('\nRandom tree:- ')
+    print('-------------------------------------')
+    print ('Total number of nodes in the random tree = %d'%node_num)
+    print('Number of leaf nodes in the random tree = %d'%leaf_node_num)
+    print('Depth of the random tree = ',str(depth/float(leaf_node_num)))
+    # read_data(training)
+    # printAccuracy(best_tree,"training")
+    read_data(test)
+    printAccuracy(random_root,"testing")
 
 
 main(sys.argv)
