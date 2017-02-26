@@ -2,7 +2,6 @@ import numpy as np
 
 class Network:
     weights=[]
-    nodes=[]
 
     def __init__(self,structure):
         self.structure=structure    
