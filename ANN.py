@@ -66,7 +66,7 @@ def buildNN(nn,neural_struct,ds,allowed_err):
                     net=0                      
                     for i in range(neural_struct[l]):
                         for a in range(neural_struct[l-1]):
-                            net+=float(nodes[l-1][a]) * float(nn.weights[l-1][a][i])
+                            net+=float(nodes[l-1][a]) * float(nn.weights[l-1][a+1][i])
                         net+=float(nn.weights[l-1][0][i])
                         n_list.append(sigmoid(net))
                     nodes.append(n_list)   
