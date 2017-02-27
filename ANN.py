@@ -58,18 +58,24 @@ def buildNN(nn,neural_struct,ds,allowed_err):
         for x in range(len(ds)):   
             nodes=[]
         # for x in range(1):
+        # FORWARD PROPAGATION
             for l in range(len(neural_struct)): 
-                if(l == 0): 
-                    nodes.append(ds[x][0])
+                n_list=[]
+                n_list.append('1')
+                if(l == 0):    
+                    for i in range(len(neural_struct)):
+                        n_list.append(ds[x][0][i])
+                    nodes.append(n_list)    
                 else:
-                    n_list=[]
-                    net=0                      
+                    #initialize
                     for i in range(neural_struct[l]):
-                        for a in range(neural_struct[l-1]):
-                            net+=float(nodes[l-1][a]) * float(nn.weights[l-1][a+1][i])
-                        net+=float(nn.weights[l-1][0][i])
-                        n_list.append(sigmoid(net))
-                    nodes.append(n_list)   
+                        n_list.append('0')
+                    nodes.append(n_list)                                         
+                    for i in range(neural_struct[l]):
+                        net=0
+                        for a in range(neural_struct[l-1]+1):
+                            net+=float(nodes[l-1][a]) * float(nn.weights[l-1][a][i])
+                        nodes[l][i+1]=sigmoid(net)
 
             for l in range(len(neural_struct)):       
                 print("Neurons at level %d:-"%l)                 
