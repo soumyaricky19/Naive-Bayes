@@ -4,7 +4,8 @@ import csv
 import numpy as np
 import math
 
-max_iterations=1
+max_iterations=1000
+ita=0.9
 
 def readData(data_file,per):
     file=open(data_file)
@@ -49,37 +50,66 @@ def startBuildNN(num_hidden,num_neurons,dataset,allowed_err):
 
 def buildNN(nn,neural_struct,ds,allowed_err):
     global max_iterations
+    global ita
     iterations=0
     error=100
     # while iterations <= max_iterations or error >= allowed_err:
     while iterations < max_iterations:
         iterations+=1
-        print("Iteration: %d"%iterations)
+        # print("Iteration: %d"%iterations)
         for x in range(len(ds)):   
             nodes=[]
+            delta=[]
         # for x in range(1):
         # FORWARD PROPAGATION
             for l in range(len(neural_struct)): 
                 n_list=[]
-                n_list.append('1')
+                delta_list=[]
+                n_list.append(1.0)
+                delta_list.append(0.0)
                 if(l == 0):    
-                    for i in range(len(neural_struct)):
-                        n_list.append(ds[x][0][i])
-                    nodes.append(n_list)    
+                    for i in range(neural_struct[l]):
+                        n_list.append(float(ds[x][0][i]))
+                        delta_list.append(0.0)
+                    nodes.append(n_list)
+                    delta.append(delta_list)    
                 else:
                     #initialize
                     for i in range(neural_struct[l]):
-                        n_list.append('0')
-                    nodes.append(n_list)                                         
-                    for i in range(neural_struct[l]):
+                        n_list.append(0)
+                        delta_list.append(0)
+                    nodes.append(n_list)    
+                    delta.append(delta_list)                                    
+                    for i in range(1,neural_struct[l]+1):
                         net=0
                         for a in range(neural_struct[l-1]+1):
-                            net+=float(nodes[l-1][a]) * float(nn.weights[l-1][a][i])
-                        nodes[l][i+1]=sigmoid(net)
+                            net+=float(nodes[l-1][a]) * float(nn.weights[l-1][a][i-1])
+                        nodes[l][i]=sigmoid(net)
 
-            for l in range(len(neural_struct)):       
-                print("Neurons at level %d:-"%l)                 
-                print(nodes[l])
+            # for l in range(len(neural_struct)):       
+            #     print("Neurons at level %d:-"%l)                 
+            #     print(nodes[l])
+
+            # BACKWARD PROPAGATION
+            for l in range(len(neural_struct)-1,0,-1): 
+                for i in range(1,neural_struct[l]+1):
+                    if(l == len(neural_struct)-1):
+                        delta[l][i]=(nodes[l][i])*(1-nodes[l][i])*(float(ds[x][1])-nodes[l][i])
+                    else:
+                        sum=0.0
+                        for j in range(1,neural_struct[l+1]+1):
+                            sum+=nn.weights[l][i][j-1]*delta[l+1][j]
+                        delta[l][i]=(nodes[l][i])*(1-nodes[l][i])*sum
+
+                    for a in range(neural_struct[l-1]+1):
+                        change_delta=float(ita)*delta[l][i]*float(nodes[l-1][a])
+                        # print(change_delta)
+                        nn.weights[l-1][a][i-1]+=change_delta
+
+            if iterations == max_iterations:
+                print("Instance %d: "%x)
+                print(round(nodes[len(neural_struct)-1][1],1))
+                # print(nn.weights)
 
 def sigmoid(x):
   return 1 / (1 + math.exp(-x))
