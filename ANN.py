@@ -10,9 +10,6 @@ ita=0.9
 def preProcess(arr):
     string_att_map=[]
     attribute_vector_list=[]
-    mean_list=[]
-    max_list=[]
-    min_list=[]
 
     arr_np=np.array(arr)
     string_att_map,data_arr_str=np.vsplit(arr_np,[1])
@@ -21,11 +18,14 @@ def preProcess(arr):
     
     mean_list=np.mean(data_arr,axis=0)
     std_list=np.std(data_arr,axis=0)
+    max_list=np.max(data_arr,axis=0)
+    min_list=np.min(data_arr,axis=0)
 
     result=[]
     for j in range(len(data_arr[0])):
         for i in range(len(data_arr)):
-            data=float(data_arr[i][j]-mean_list[j])/std_list[j]
+            # data=float(data_arr[i][j]-mean_list[j])/std_list[j]
+            data=float(data_arr[i][j]-min_list[j])/(max_list[j]-min_list[j])
             data_arr[i][j]=float(data)
         
 #Final data conversion        
