@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 max_iterations=5000
-ita=1
+ita=0.5
 
 def readData(data_file,per):
     file=open(data_file)
@@ -53,7 +53,6 @@ def buildNN(nn,neural_struct,ds,allowed_err):
     global max_iterations
     global ita
     iterations=0
-    error=100
     accuracy=0.0
     # while iterations <= max_iterations or error >= allowed_err:
     while (iterations < max_iterations and accuracy <= 100-allowed_err):
@@ -153,12 +152,11 @@ def testAccuracy(nn,neural_struct,ds):
                             net+=float(nodes[l-1][a]) * float(nn.weights[l-1][a][i-1])
                         nodes[l][i]=sigmoid(net)
                 if l == (len(neural_struct)-1):
-                    # print(round(nodes[l][1],1),round(float(ds[x][1]),1))
-
                     if round(nodes[l][1],0) == round(float(ds[x][1]),0):
                         correct+=1        
                     else:
-                        wrong+=1    
+                        wrong+=1
+                        print(round(nodes[l][1],1),round(float(ds[x][1]),1))    
 
     print("Accuracy: ",str(float(correct/(correct+wrong)*100)))
 
@@ -174,7 +172,7 @@ def main(args):
     train_per=95
     err_tol=5
     num_hidden=1
-    num_neurons=10
+    num_neurons=11
     train,test=readData(in_data,train_per)
     nn,n_struct=startBuildNN(num_hidden,num_neurons,train,err_tol)
     testAccuracy(nn,n_struct,test)
