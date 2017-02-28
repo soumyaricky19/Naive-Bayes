@@ -5,7 +5,8 @@ import numpy as np
 import math
 
 max_iterations=100000
-ita=0.05
+ita=0.9
+precision=1
 
 def preProcess(arr):
     string_att_map=[]
@@ -66,6 +67,7 @@ def buildNN(nn,neural_struct,ds,allowed_err):
     print("Training started...")
     global max_iterations
     global ita
+    global precision
     iterations=0
     accuracy=0.0
     # while iterations <= max_iterations or error >= allowed_err:
@@ -112,7 +114,7 @@ def buildNN(nn,neural_struct,ds,allowed_err):
             for l in range(len(neural_struct)-1,0,-1): 
                 for i in range(1,neural_struct[l]+1):
                     if(l == len(neural_struct)-1):
-                        delta[l][i]=(nodes[l][i])*(1-nodes[l][i])*(round(float(ds[x][1]),2)-round(nodes[l][i],2))
+                        delta[l][i]=(nodes[l][i])*(1-nodes[l][i])*(float(ds[x][1])-nodes[l][i])
                     else:
                         sum=0.0
                         for j in range(1,neural_struct[l+1]+1):
@@ -127,7 +129,7 @@ def buildNN(nn,neural_struct,ds,allowed_err):
             
             l=len(neural_struct)-1
             # print(delta[l])
-            if round(nodes[l][1],2) == round(float(ds[x][1]),2):
+            if round(nodes[l][1],precision) == round(float(ds[x][1]),precision):
                 correct+=1        
             else:
                 wrong+=1
@@ -167,11 +169,11 @@ def testAccuracy(nn,neural_struct,ds):
                             net+=float(nodes[l-1][a]) * float(nn.weights[l-1][a][i-1])
                         nodes[l][i]=sigmoid(net)
                 if l == (len(neural_struct)-1):
-                    if round(nodes[l][1],2) == round(float(ds[x][1]),2):
+                    if round(nodes[l][1],precision) == round(float(ds[x][1]),precision):
                         correct+=1        
                     else:
                         wrong+=1
-                        print(round(nodes[l][1],2),round(float(ds[x][1]),2))    
+                        print(round(nodes[l][1],precision),round(float(ds[x][1]),precision))    
 
     print("Test accuracy: ",str(float(correct/(correct+wrong)*100)))
 
@@ -184,8 +186,8 @@ def main(args):
     # num_neurons=int(args[5])
     in_data="Boston.csv"
     # in_data="training_set.csv"
-    train_per=80.0
-    err_tol=20.0
+    train_per=95.0
+    err_tol=40.0
     num_hidden=1
     num_neurons=15
     raw_list=readData(in_data)
