@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 max_iterations=100000
-ita=0.1
+ita=0.05
 
 def preProcess(arr):
     string_att_map=[]
@@ -112,7 +112,7 @@ def buildNN(nn,neural_struct,ds,allowed_err):
             for l in range(len(neural_struct)-1,0,-1): 
                 for i in range(1,neural_struct[l]+1):
                     if(l == len(neural_struct)-1):
-                        delta[l][i]=(nodes[l][i])*(1-nodes[l][i])*(float(ds[x][1])-nodes[l][i])
+                        delta[l][i]=(nodes[l][i])*(1-nodes[l][i])*(round(float(ds[x][1]),2)-round(nodes[l][i],2))
                     else:
                         sum=0.0
                         for j in range(1,neural_struct[l+1]+1):
