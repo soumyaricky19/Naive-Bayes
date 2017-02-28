@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 max_iterations=100000
-ita=0.9
+ita=0.1
 
 def preProcess(arr):
     string_att_map=[]
@@ -127,7 +127,7 @@ def buildNN(nn,neural_struct,ds,allowed_err):
             
             l=len(neural_struct)-1
             # print(delta[l])
-            if round(nodes[l][1],1) == round(float(ds[x][1]),1):
+            if round(nodes[l][1],2) == round(float(ds[x][1]),2):
                 correct+=1        
             else:
                 wrong+=1
@@ -167,11 +167,11 @@ def testAccuracy(nn,neural_struct,ds):
                             net+=float(nodes[l-1][a]) * float(nn.weights[l-1][a][i-1])
                         nodes[l][i]=sigmoid(net)
                 if l == (len(neural_struct)-1):
-                    if round(nodes[l][1],1) == round(float(ds[x][1]),1):
+                    if round(nodes[l][1],2) == round(float(ds[x][1]),2):
                         correct+=1        
                     else:
                         wrong+=1
-                        print(round(nodes[l][1],1),round(float(ds[x][1]),1))    
+                        print(round(nodes[l][1],2),round(float(ds[x][1]),2))    
 
     print("Test accuracy: ",str(float(correct/(correct+wrong)*100)))
 
