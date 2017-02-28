@@ -4,31 +4,45 @@ import csv
 import numpy as np
 import math
 
-max_iterations=2000
-ita=1.7
+max_iterations=100000
+ita=0.9
 
-def readData(data_file,per):
+def preProcess(arr):
+    string_att_map=[]
+    attribute_vector_list=[]
+    mean_list=[]
+    max_list=[]
+    min_list=[]
+
+    arr_np=np.array(arr)
+    string_att_map,data_arr_str=np.vsplit(arr_np,[1])
+    # numbering,data_arr_str=np.hsplit(arr_np,[1])
+    data_arr=data_arr_str.astype(np.float)
+    
+    mean_list=np.mean(data_arr,axis=0)
+    std_list=np.std(data_arr,axis=0)
+
+    result=[]
+    for j in range(len(data_arr[0])):
+        for i in range(len(data_arr)):
+            data=float(data_arr[i][j]-mean_list[j])/std_list[j]
+            data_arr[i][j]=float(data)
+        
+#Final data conversion        
+    for row in data_arr:
+        split_rows=(row[1:len(row)-1],row[len(row)-1])
+        attribute_vector_list.append(split_rows)
+    # print(attribute_vector_list)
+    return attribute_vector_list
+
+def readData(data_file):
     file=open(data_file)
     read=csv.reader(file)
-    is_header=True
-
-    map=[]
     attribute_vector_list=[]
-    attribute_num=0
-    row_num=0
     for row in read:
-        if is_header:
-            
-            attribute_num=len(row)-1
-            map=row[0:attribute_num]
-            is_header=False       
-        else:        
-            row_num+=1
-            train=(row[0:len(row)-1],row[len(row)-1])
-            attribute_vector_list.append(train)
-
-    set=np.vsplit(attribute_vector_list,np.array([row_num*per/100,]))
-    return set
+        attribute_vector_list.append(row)
+    return attribute_vector_list
+    
 
 def startBuildNN(num_hidden,num_neurons,dataset,allowed_err):
     # form neural network structure
@@ -106,6 +120,7 @@ def buildNN(nn,neural_struct,ds,allowed_err):
                         delta[l][i]=(nodes[l][i])*(1-nodes[l][i])*sum
 
                     for a in range(neural_struct[l-1]+1):
+                        # ita=iterations/100000.0
                         change_delta=float(ita)*delta[l][i]*float(nodes[l-1][a])
                         # print(change_delta)
                         nn.weights[l-1][a][i-1]+=change_delta
@@ -167,13 +182,15 @@ def main(args):
     # err_tol=int(args[3])
     # num_hidden=int(args[4])
     # num_neurons=int(args[5])
-    # in_data="Boston2.csv"
-    in_data="training_set.csv"
-    train_per=80
-    err_tol=20
+    in_data="Boston.csv"
+    # in_data="training_set.csv"
+    train_per=80.0
+    err_tol=20.0
     num_hidden=1
-    num_neurons=11
-    train,test=readData(in_data,train_per)
+    num_neurons=15
+    raw_list=readData(in_data)
+    processed_list=preProcess(raw_list)
+    train,test=np.vsplit(processed_list,np.array([len(raw_list)*train_per/100,]))
     nn,n_struct=startBuildNN(num_hidden,num_neurons,train,err_tol)
     testAccuracy(nn,n_struct,test)
 main(sys.argv)
