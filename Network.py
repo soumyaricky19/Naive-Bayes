@@ -8,9 +8,9 @@ class Network:
         count=0  
         print("structure",str(structure))
         for (a,b) in zip(structure[:-1],structure[1:]):
-            print("Level: %d"%count)
+            # print("Level: %d"%count)
             count+=1
             x=np.random.random_sample((a+1,b))
             self.weights.append(x)
-            print(x)
+            # print(x)
             

@@ -4,8 +4,8 @@ import csv
 import numpy as np
 import math
 
-max_iterations=5000
-ita=0.5
+max_iterations=2000
+ita=1.7
 
 def readData(data_file,per):
     file=open(data_file)
@@ -119,7 +119,7 @@ def buildNN(nn,neural_struct,ds,allowed_err):
                 # print(nodes[l][1],1),round(float(ds[x][1]),1)
         
         accuracy=float(correct/(correct+wrong))*100
-        print (iterations,accuracy)
+        print (iterations,"Training...accuracy: ",accuracy)
             # if iterations == max_iterations:
                 # print("Instance %d: "%x)
                 # print(round(nodes[len(neural_struct)-1][1],1))
@@ -152,13 +152,13 @@ def testAccuracy(nn,neural_struct,ds):
                             net+=float(nodes[l-1][a]) * float(nn.weights[l-1][a][i-1])
                         nodes[l][i]=sigmoid(net)
                 if l == (len(neural_struct)-1):
-                    if round(nodes[l][1],0) == round(float(ds[x][1]),0):
+                    if round(nodes[l][1],1) == round(float(ds[x][1]),1):
                         correct+=1        
                     else:
                         wrong+=1
                         print(round(nodes[l][1],1),round(float(ds[x][1]),1))    
 
-    print("Accuracy: ",str(float(correct/(correct+wrong)*100)))
+    print("Test accuracy: ",str(float(correct/(correct+wrong)*100)))
 
 def main(args):
     print("Program executing...")
@@ -169,8 +169,8 @@ def main(args):
     # num_neurons=int(args[5])
     # in_data="Boston2.csv"
     in_data="training_set.csv"
-    train_per=95
-    err_tol=5
+    train_per=80
+    err_tol=20
     num_hidden=1
     num_neurons=11
     train,test=readData(in_data,train_per)
