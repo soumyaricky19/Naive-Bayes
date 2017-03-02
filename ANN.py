@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 max_iterations=100000
-ita=0.9
+ita=0.5
 precision=1
 
 def preProcess(arr):
