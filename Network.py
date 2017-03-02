@@ -6,7 +6,7 @@ class Network:
     def __init__(self,structure):
         self.structure=structure    
         count=0  
-        print("structure",str(structure))
+        # print("structure",str(structure))
         for (a,b) in zip(structure[:-1],structure[1:]):
             # print("Level: %d"%count)
             count+=1

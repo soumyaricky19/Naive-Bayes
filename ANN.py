@@ -36,6 +36,7 @@ def preProcess(arr):
     # print(attribute_vector_list)
     return attribute_vector_list
 
+
 def readData(data_file):
     file=open(data_file)
     read=csv.reader(file)
@@ -52,11 +53,14 @@ def startBuildNN(num_hidden,num_neurons,dataset,allowed_err):
     attribute_len=len(dataset[0][0])
     neural_struct.append(attribute_len)
     #hidden layers
-    for x in range(int(num_hidden)):
-        neural_struct.append(int(num_neurons))
+    # for x in range(int(num_hidden)):
+    #     neural_struct.append(int(num_neurons))
+    neural_struct.append(8)
+    # neural_struct.append(5)
     #classification layer
     classes=1
     neural_struct.append(classes)
+    print(neural_struct)
     nn=Network(neural_struct)
     # print("Final")
     # print(nn.weights[0][1][1])
@@ -169,11 +173,13 @@ def testAccuracy(nn,neural_struct,ds):
                             net+=float(nodes[l-1][a]) * float(nn.weights[l-1][a][i-1])
                         nodes[l][i]=sigmoid(net)
                 if l == (len(neural_struct)-1):
-                    if round(nodes[l][1],precision) == round(float(ds[x][1]),precision):
-                        correct+=1        
+                     
+                    if round(nodes[l][1],precision) == round(float(ds[x][1]),precision):    
+                        correct+=1  
+                        print("correct",(nodes[l][1]),float(ds[x][1]))
                     else:
                         wrong+=1
-                        print(round(nodes[l][1],precision),round(float(ds[x][1]),precision))    
+                        print("Wrong",(nodes[l][1]),float(ds[x][1]))
 
     print("Test accuracy: ",str(float(correct/(correct+wrong)*100)))
 
@@ -186,8 +192,8 @@ def main(args):
     # num_neurons=int(args[5])
     in_data="Boston.csv"
     # in_data="training_set.csv"
-    train_per=95.0
-    err_tol=40.0
+    train_per=90.0
+    err_tol=45.0
     num_hidden=1
     num_neurons=15
     raw_list=readData(in_data)
