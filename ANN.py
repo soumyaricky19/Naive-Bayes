@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 max_iterations=100000
-ita=0.5
+ita=0.9
 precision=1
 
 def preProcess(arr):
@@ -133,7 +133,7 @@ def buildNN(nn,neural_struct,ds,allowed_err):
             
             l=len(neural_struct)-1
             # print(delta[l])
-            if round(nodes[l][1],precision) == round(float(ds[x][1]),precision):
+            if round(nodes[l][1]-float(ds[x][1]),precision) == round(float(0),precision):
                 correct+=1        
             else:
                 wrong+=1
@@ -174,7 +174,7 @@ def testAccuracy(nn,neural_struct,ds):
                         nodes[l][i]=sigmoid(net)
                 if l == (len(neural_struct)-1):
                      
-                    if round(nodes[l][1],precision) == round(float(ds[x][1]),precision):    
+                    if round(nodes[l][1]-float(ds[x][1]),precision) == round(float(0),precision):    
                         correct+=1  
                         print("correct",(nodes[l][1]),float(ds[x][1]))
                     else:
@@ -193,7 +193,7 @@ def main(args):
     in_data="Boston.csv"
     # in_data="training_set.csv"
     train_per=90.0
-    err_tol=45.0
+    err_tol=35.0
     num_hidden=1
     num_neurons=15
     raw_list=readData(in_data)
