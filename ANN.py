@@ -4,32 +4,39 @@ import csv
 import numpy as np
 import math
 
-max_iterations=100000
-ita=0.9
+max_iterations=5000
+ita=0.6
 precision=1
 
 def preProcess(arr):
     string_att_map=[]
     attribute_vector_list=[]
+    col_to_delete=[]
 
     arr_np=np.array(arr)
-    string_att_map,data_arr_str=np.vsplit(arr_np,[1])
-    # numbering,data_arr_str=np.hsplit(arr_np,[1])
+    #Ignore columns with no header
+    for j in range(len(arr[0])):
+        if len(arr[0][j]) == 0:
+            col_to_delete.append(j)
+
+    arr_np=np.delete(arr_np,col_to_delete, axis=1)        
+
+    #Separate header
+    string_att_map,data_arr_str=np.vsplit(arr_np,[1])  
+
+    #Convert into float values
     data_arr=data_arr_str.astype(np.float)
-    
-    mean_list=np.mean(data_arr,axis=0)
-    std_list=np.std(data_arr,axis=0)
+
+    #Normalize
     max_list=np.max(data_arr,axis=0)
     min_list=np.min(data_arr,axis=0)
 
-    result=[]
     for j in range(len(data_arr[0])):
         for i in range(len(data_arr)):
-            # data=float(data_arr[i][j]-mean_list[j])/std_list[j]
             data=float(data_arr[i][j]-min_list[j])/(max_list[j]-min_list[j])
-            data_arr[i][j]=float(data)
+            data_arr[i][j]=data
         
-#Final data conversion        
+    #Final data conversion        
     for row in data_arr:
         split_rows=(row[1:len(row)-1],row[len(row)-1])
         attribute_vector_list.append(split_rows)
@@ -46,17 +53,15 @@ def readData(data_file):
     return attribute_vector_list
     
 
-def startBuildNN(num_hidden,num_neurons,dataset,allowed_err):
+def startBuildNN(neurons,dataset,allowed_err):
     # form neural network structure
     neural_struct=[]
     #attribute layer
-    attribute_len=len(dataset[0][0])
-    neural_struct.append(attribute_len)
+    neural_struct.append(len(dataset[0][0]))
     #hidden layers
-    # for x in range(int(num_hidden)):
-    #     neural_struct.append(int(num_neurons))
-    neural_struct.append(8)
-    # neural_struct.append(5)
+    for x in range(len(neurons)):
+        neural_struct.append(neurons[x])
+
     #classification layer
     classes=1
     neural_struct.append(classes)
@@ -185,20 +190,22 @@ def testAccuracy(nn,neural_struct,ds):
 
 def main(args):
     print("Program executing...")
-    # in_data=args[1]
-    # train_per=int(args[2])
-    # err_tol=int(args[3])
-    # num_hidden=int(args[4])
-    # num_neurons=int(args[5])
+    in_data=args[1]
+    train_per=int(args[2])
+    err_tol=int(args[3])
+    num_hidden=int(args[4])
+    neurons=[]
+    for i in range(num_hidden):
+        neurons.append(int(args[5+i]))
+
     in_data="Boston.csv"
     # in_data="training_set.csv"
     train_per=90.0
-    err_tol=35.0
-    num_hidden=1
-    num_neurons=15
+    err_tol=40.0
+ 
     raw_list=readData(in_data)
     processed_list=preProcess(raw_list)
     train,test=np.vsplit(processed_list,np.array([len(raw_list)*train_per/100,]))
-    nn,n_struct=startBuildNN(num_hidden,num_neurons,train,err_tol)
+    nn,n_struct=startBuildNN(neurons,train,err_tol)
     testAccuracy(nn,n_struct,test)
 main(sys.argv)
