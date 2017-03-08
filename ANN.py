@@ -4,12 +4,11 @@ import csv
 import numpy as np
 import math
 
-max_iterations=50000
+max_iterations=5
 class_threshold=0.05
 ita=0.5
-# has_header=True
 
-def preProcess(arr):
+def preProcess(data_in,data_out):
     global class_threshold
     string_att_map=[]
     attribute_vector_list=[]
@@ -17,6 +16,14 @@ def preProcess(arr):
     is_classfication=False
     num_cols=0
     num_rows=0
+
+    #Read data
+    file=open(data_in)
+    read=csv.reader(file)
+    arr=[]
+    for row in read:
+        arr.append(row)
+    file.close()
 
     #Separate header
     is_header=True
@@ -79,7 +86,7 @@ def preProcess(arr):
                 is_str=True
 
             if data_arr_str[i][j] in unique_list:
-                temp_arr_str[i]=unique_list.index(data_arr_str[i][j])
+                temp_arr_str[i]=unique_list.index(data_arr_str[i][j])+1
             else:
                 temp_arr_str[i]=len(unique_list)+1
                 unique_list.append(data_arr_str[i][j])
@@ -117,6 +124,7 @@ def preProcess(arr):
     temp_arr=data_arr.tolist()
     # print(temp_arr)
 
+
     #Separate attribute list and class
     if is_classfication:
         for row in temp_arr:
@@ -131,19 +139,26 @@ def preProcess(arr):
             split_rows=(row[0:num_cols-1],((row[num_cols-1]-min_list[num_cols-1])/(max_list[num_cols-1]-min_list[num_cols-1])))
             attribute_vector_list.append(split_rows)
 
-        
+    #write data into file 
+    file=open(data_out,'w')
+    writer=csv.writer(file)
+    if has_header == True:
+        header=[]
+        for j in valid_string_att_index:
+                header.append(string_att_map[j])
+        writer.writerow(header)
+    for i in range(len(attribute_vector_list)):
+        row=[]
+        for j in range(len(attribute_vector_list[i][0])):
+            row.append(attribute_vector_list[i][0][j])
+
+        row.append(attribute_vector_list[i][1])
+        writer.writerow(row)
+
+    
+    file.close()
     # print(attribute_vector_list[0][1])
     return attribute_vector_list,is_classfication,len(unique_list),num_rows,num_cols
-
-
-def readData(data_file):
-    file=open(data_file)
-    read=csv.reader(file)
-    attribute_vector_list=[]
-    for row in read:
-        attribute_vector_list.append(row)
-    file.close()
-    return attribute_vector_list
     
 
 def startBuildNN(neurons,dataset,allowed_err,is_classification,num_classes):
@@ -162,14 +177,14 @@ def startBuildNN(neurons,dataset,allowed_err,is_classification,num_classes):
         classes=1
     
     neural_struct.append(classes)
-    print(neural_struct)
+    print("Neural structure: ",neural_struct)
     nn=Network(neural_struct)
     # print("Final")
     # print(nn.weights[0][1][1])
     buildNN(nn,neural_struct,dataset,allowed_err,is_classification)
     return nn,neural_struct
 
-def buildNN(nn,neural_struct,ds,allowed_err,is_classification):
+def buildNN(nn,neural_struct,ds,err_tol,is_classification):
     print("Training started...")
     global max_iterations
     global ita
@@ -180,10 +195,11 @@ def buildNN(nn,neural_struct,ds,allowed_err,is_classification):
     else:
         precision=1 
     # while iterations <= max_iterations or error >= allowed_err:
-    while (iterations < max_iterations and accuracy < 100-allowed_err):
+    err_tol=False
+    while (iterations < max_iterations and err_tol==False):
         iterations+=1
-        correct=0.0
-        wrong=0.0
+        correct=[]
+        # wrong=0.0
         # print("Iteration: %d"%iterations)
         for x in range(len(ds)):   
             nodes=[]
@@ -247,44 +263,57 @@ def buildNN(nn,neural_struct,ds,allowed_err,is_classification):
             # print(delta[l])
             if (is_classification):
                 flag_1=False
-                flag_2=False
-                for a in range(neural_struct[l]):
+                flag_2=True
+                for a in range(1,neural_struct[l]+1):
                     if a == ds[x][1]:
-                        if round(nodes[l][a]) == 1:
+                        if (1 - nodes[l][a] ) <= err_tol:
                             flag_1=True
-                        else:
-                            flag_1=False
                     else:
-                        if round(nodes[l][a]) == 0:
-                            flag_2=True
-                        else:
+                        if (nodes[l][a] - 0) > err_tol:
                             flag_2=False
 
                 if flag_1 and flag_2:
-                    correct+=1
+                    correct.append(True)
                 else:
-                    wrong+=1
+                    correct.append(False)
             else:
-                if round(nodes[l][1]-float(ds[x][1]),precision) == round(float(0),precision):
-                    correct+=1        
+                if (float(ds[x][1])-nodes[l][1] <= err_tol):
+                    correct.append(True)     
                 else:
-                    wrong+=1
-            # print(ds[x][1],float(nodes[l][1]))
-        
-        accuracy=float(correct/(correct+wrong))*100
-        print (iterations,"Training...accuracy: ",accuracy)
+                    correct.append(False)
+            
+        err_tol=True
+        for x in range(len(ds)):
+            if correct[x]==False:
+                err_tol=False
+                break
+
+        # accuracy=float(correct/(correct+wrong))*100
+        # print ("Training...iteration:",iterations)
         # print(nodes[2])
         # print(ds[x][1])
             # if iterations == max_iterations:
                 # print("Instance %d: "%x)
                 # print(round(nodes[len(neural_struct)-1][1],1))
                 # print(nn.weights)
-    print("Training complete.")
+    printWeights(nodes,neural_struct)            
+    print("Training complete. Iterations:",iterations)
 
 def sigmoid(x):
   return 1 / (1 + math.exp(-x))
 
-def testAccuracy(nn,neural_struct,ds,is_classification):
+def printWeights(nodes,neural_struct):
+    for l in range(1,len(neural_struct)):
+        print(neural_struct[l])
+        if(l == len(neural_struct)-1):
+            print("Output Layer:")
+        else:
+            print("Hidden Layer%d:"%(l))
+        
+        for i in range(neural_struct[l]):
+                print("Neuron%d weights"%(i+1),nodes[l][i+1])
+
+def testAccuracy(nn,neural_struct,ds,is_classification,err_tol,par):
     if (is_classification):
         precision=0
     else:
@@ -316,49 +345,65 @@ def testAccuracy(nn,neural_struct,ds,is_classification):
                 if l == (len(neural_struct)-1):
                     if (is_classification): 
                         flag_1=False
-                        flag_2=False
-                        for a in range(neural_struct[l]):
+                        flag_2=True
+                        for a in range(1,neural_struct[l]+1):
+                            # if par=="Training":
+                            #     print(ds[x][1])
+                            #     print(err_tol)
                             if a == ds[x][1]:
-                                if round(nodes[l][a]) == 1:
+                                # if par=="Training":
+                                #     print("a",a)
+                                #     print("1",1 - nodes[l][a])
+                                if (1 - nodes[l][a] ) <= err_tol:
                                     flag_1=True
-                                else:
-                                    flag_1=False
                             else:
-                                if round(nodes[l][a]) == 0:
-                                    flag_2=True
-                                else:
+                                # if par=="Training":
+                                #     print("a",a)
+                                #     print("0",nodes[l][a] - 0)
+                                if (nodes[l][a] - 0) > err_tol:
                                     flag_2=False
-
+                        # if par=="Training":            
+                            # print(flag_1)
+                            # print(flag_2)
                         if flag_1 and flag_2:
                             correct+=1
-                            # print("correct: ",nodes[l][1:],0, int(ds[x][1]))
+                            # if par=="Training":
+                                # print("correct: ",nodes[l],int(ds[x][1]))
                         else:
                             wrong+=1
-                            # print("wrong: ",nodes[l][1:],0, int(ds[x][1]))
+                            # if par=="Training":
+                            #     print("wrong: ",nodes[l], int(ds[x][1]))
                     else:
-                        if round(nodes[l][1]-float(ds[x][1]),precision) == round(float(0),precision):    
-                            correct+=1  
-                            print("correct",(nodes[l][1]),float(ds[x][1]))
+                        if (float(ds[x][1])-nodes[l][1] <= err_tol):
+                            correct+=1   
                         else:
                             wrong+=1
-                            print("Wrong",(nodes[l][1]),float(ds[x][1]))
 
-    print("Test accuracy: ",str(float(correct/(correct+wrong)*100)))
+    print(par," accuracy: ",str(float(correct/(correct+wrong)*100)))
 
 def main(args):
+    print(args)
     print("Program executing...")
     in_data=args[1]
-    train_per=int(args[2])
-    err_tol=int(args[3])
-    num_hidden=int(args[4])
+    out_data=args[2]
+    train_per=int(args[3])
+    err_tol=float(args[4])
+    num_hidden=int(args[5])
     neurons=[]
     for i in range(num_hidden):
-        neurons.append(int(args[5+i]))
+        neurons.append(int(args[6+i]))
+    
+    # in_data="iris.csv"
+    # out_data="rough.csv"
+    # train_per=80
+    # err_tol=0.5
+    # num_hidden=1
+    # neurons=[5]
 
-    raw_list=readData(in_data)
-    processed_list,is_classification,num_classes,num_rows,num_cols=preProcess(raw_list)
+    processed_list,is_classification,num_classes,num_rows,num_cols=preProcess(in_data,out_data)
     # print(processed_list)  
     train,test=np.vsplit(processed_list,np.array([int(num_rows*train_per)/100,]))
     nn,n_struct=startBuildNN(neurons,train,err_tol,is_classification,num_classes)
-    testAccuracy(nn,n_struct,test,is_classification)
+    testAccuracy(nn,n_struct,train,is_classification,err_tol,"Training")
+    testAccuracy(nn,n_struct,test,is_classification,err_tol,"Test")
 main(sys.argv)
