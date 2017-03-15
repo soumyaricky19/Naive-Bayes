@@ -4,7 +4,7 @@ import csv
 import numpy as np
 import math
 
-max_iterations=5
+max_iterations=500
 class_threshold=0.05
 ita=0.5
 
@@ -371,13 +371,13 @@ def testAccuracy(nn,neural_struct,ds,is_classification,err_tol,par):
                                 # print("correct: ",nodes[l],int(ds[x][1]))
                         else:
                             wrong+=1
-                            # if par=="Training":
-                            #     print("wrong: ",nodes[l], int(ds[x][1]))
+                            
                     else:
-                        if (float(ds[x][1])-nodes[l][1] <= err_tol):
+                        if (abs(ds[x][1]-nodes[l][1]) <= err_tol):
                             correct+=1   
                         else:
                             wrong+=1
+                            # print("wrong: ",nodes[l], ds[x][1])
 
     print(par," accuracy: ",str(float(correct/(correct+wrong)*100)))
 
