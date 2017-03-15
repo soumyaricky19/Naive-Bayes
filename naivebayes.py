@@ -233,6 +233,7 @@ def main(args):
     for i in range(len(l)):
         d=getFiles(l[i])
         d=sortRev(d)
+        
         data.append(d)
 
     #print(reversed(sortD))
