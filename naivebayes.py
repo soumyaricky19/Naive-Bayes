@@ -46,12 +46,13 @@ def process(row,d,total):
     return len(words)
 
 def readTestData(data,struct,path,file_count):
-    correct_wrong=[0,0]
+    # correct_wrong=[0,0]
+    print("File: %d"%file_count)
     correct=0
     wrong=0
     for filename in os.scandir(path):
         if filename.is_file():
-            print(filename)
+            # print(filename)
             file=open(filename)
             i=0
             lines=0
@@ -63,13 +64,15 @@ def readTestData(data,struct,path,file_count):
                 if (lines !=0 and i<=lines):
                     i+=1
                     if row != "\n":
-                        findWords(row,w)
+                        w=findWords(row,w)
                 elif(lines !=0):
                     break
-            # print(w)
             correct,wrong=checkClass(w,data,struct,file_count,correct,wrong)
     #Accuracy
-    print(correct,wrong)
+    printAccuracy(correct,wrong)
+
+def printAccuracy(c,w):
+    print("Accuracy:",c/(c+w)*100)
 
 def checkClass(words,data,struct,file_count,correct,wrong):
     prob_list=[]
@@ -88,12 +91,13 @@ def checkClass(words,data,struct,file_count,correct,wrong):
         likelihood=0.0
         for word in words:
             # print("Probabilty",word, d.get(word,1.0)/struct[i])
-            likelihood+=-math.log(d.get(word,1.0)/struct[i])
+            likelihood+=math.log((d.get(word,0.01))/(struct[i]))
             # print(likelihood)
-        likelihood+=-math.log(prior[i])
+        likelihood+=math.log(prior[i])
         prob_list.append(likelihood)
         i+=1
-    print(prob_list.index(max(prob_list)))
+    # print(prob_list)
+    # print(prob_list.index(max(prob_list)))
     if prob_list.index(max(prob_list)) == file_count:
         correct+=1
     else:
@@ -108,28 +112,29 @@ def findWords(row,words):
     for x in row:
         if (x.lower() not in ignore):
             words.append(x.lower())
+    return words
 
 def sortRev(d):
     return sorted(d.items(), key=lambda value: value[1], reverse=True)
 
 def main(args):
-    l=["20news-bydate-train\\alt.atheism","20news-bydate-train\\comp.graphics"]
+    train_path=["20news-bydate-train\\soc.religion.christian","20news-bydate-train\\comp.graphics","20news-bydate-train\\sci.electronics","20news-bydate-train\\rec.sport.baseball"]
     # l=["20news-bydate-train\\alt.atheism"]
     data=[]
     struct=[]
     d=()
     # for i in range(5):
-    for i in range(2):
-        d,t=getFiles(l[i])
+    for i in range(len(train_path)):
+        d,t=getFiles(train_path[i])
         # d=sortRev(d)
         # print(d)
         data.append(d)
         struct.append(t)
-        print(t)
+        # print(t)
     
-    test_path="20news-bydate-test\\alt.atheism"
-    for i in range(2):
-        readTestData(data,struct,test_path,i)
+    test_path=["20news-bydate-test\\soc.religion.christian","20news-bydate-test\\comp.graphics","20news-bydate-test\\sci.electronics","20news-bydate-test\\rec.sport.baseball"]
+    for i in range(len(test_path)):
+        readTestData(data,struct,test_path[i],i)
     # print(data)
 
 main(sys.argv)
