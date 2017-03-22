@@ -118,23 +118,27 @@ def sortRev(d):
     return sorted(d.items(), key=lambda value: value[1], reverse=True)
 
 def main(args):
-    train_path=["20news-bydate-train\\soc.religion.christian","20news-bydate-train\\comp.graphics","20news-bydate-train\\sci.electronics","20news-bydate-train\\rec.sport.baseball"]
+    # train_path=args[1]
+    # test_path=args[2]
+    train_path="20news-bydate-train"
+    test_path="20news-bydate-test"
+    train=["rec.sport.hockey","soc.religion.christian","comp.graphics","sci.electronics","rec.sport.baseball"]
     # l=["20news-bydate-train\\alt.atheism"]
     data=[]
     struct=[]
     d=()
     # for i in range(5):
-    for i in range(len(train_path)):
-        d,t=getFiles(train_path[i])
+    for i in range(len(train)):
+        d,t=getFiles(train_path+"\\"+train[i])
         # d=sortRev(d)
         # print(d)
         data.append(d)
         struct.append(t)
         # print(t)
     
-    test_path=["20news-bydate-test\\soc.religion.christian","20news-bydate-test\\comp.graphics","20news-bydate-test\\sci.electronics","20news-bydate-test\\rec.sport.baseball"]
-    for i in range(len(test_path)):
-        readTestData(data,struct,test_path[i],i)
+    test=["rec.sport.hockey","soc.religion.christian","comp.graphics","sci.electronics","rec.sport.baseball"]
+    for i in range(len(test)):
+        readTestData(data,struct,test_path+"\\"+test[i],i)
     # print(data)
 
 main(sys.argv)
